@@ -1,0 +1,668 @@
+###############################################################
+#               Membership Rank Up Commands                   #
+###############################################################
+
+/**
+ *  Promotes a player to CITIZEN, giving them the tag,
+ *  the permissions that come with it, and the bonus
+ *  claimblocks for becoming a citizen
+ *  Usage: /citizen <player/?>
+ */
+~director:/citizen [$] = >>>
+    include('includes/membershiprankup/main.ms')
+    _mpu('citizen', $)
+<<<
+
+/**
+ *  Promotes a player to VETERAN, giving them the tag,
+ *  the permissions that come with it, and the bonus
+ *  claimblocks for becoming a citizen
+ *  Usage: /citizen <player/?>
+ */
+~director:/veteran [$] =  >>>
+    include('includes/membershiprankup/main.ms')
+    _mpu('veteran', $)
+<<<
+
+
+
+###############################################################
+#                  Event Driven Commands                      #
+###############################################################
+
+/**
+ * Fills an oven at a specified known location. 
+ * Oven locations must be specified in ovens.ms file 
+ * found in includes/cafeovenfiller
+ */
+~visitor:/filloven $location = >>>
+    include('includes/cafeovenfiller/main.ms')
+    _cafeOvenFiller($location)
+<<<
+
+/**
+ *  Applies a status/potion effect to a player ONLY
+ *  Used as a 'custom enchant' for Custom Items
+ */
+~customEnchant:/customenchant $targetPlayer $enchant [$amplifier] = >>>
+
+  switch($enchant)
+  {
+    case 'slowness':
+      @enchantID = 2
+      @duration = 3
+      break
+    case 'miningfatigue':
+      @enchantID = 4
+      @duration = 3
+      break
+    default:
+      @enchantID = 1
+      @duration = 0
+  }
+  
+  try(
+    player($targetPlayer)
+    run('/effect '.$targetPlayer.' '.@enchantID.' '.@duration.' '.$amplifier)
+  )
+<<<
+
+
+
+
+###############################################################
+#                  Custom Item Commands                       #
+###############################################################
+
+/**
+ *  Command used for TP Scrolls. Locations are hardcoded
+ *  and can be found in includes/tpscrolls/teleport.ms
+ */
+~customItem:/tpscrolls [$] = >>>
+    include('includes/tpscrolls/main.ms')
+    @args = parse_args($)
+    try(
+      _teleportScrolls($)
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(e).' You do not have permissions to do this')
+      }
+      else
+      {
+        die(@ex)
+      }
+    )
+<<<
+
+~customItem:/sendMessage [$] = >>>
+  @args = parse_args($)
+  @string = ''
+  foreach(@arg in @args)
+  {
+    @string .= @arg.' '
+  }
+  msg(@string)
+<<<
+
+/**
+ *  Command used to send the player's home
+ */
+~customItem:/hearthstonehome = >>>
+    include('includes/hearthstones/main.ms')
+    try(
+    _hearthstoneHome()
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(e).' You do not have permissions to do this')
+      }
+    )
+<<<
+
+/**
+ *  Command used to set the player's home
+ */
+~customItem:/hearthstonesethome = >>>
+    include('includes/hearthstones/main.ms')
+    try(
+    _hearthstoneSetHome()
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(e).' You do not have permissions to do this')
+      }
+    )
+<<<
+
+#Drinks a custom potion
+~customItem:/drinkpotion $name = >>>
+    include('includes/custompotions/main.ms')
+    try(
+    _customPotion($name)
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(e).' You do not have permissions to do this')
+      }
+    )
+<<<
+
+#Player Tracker
+~customItem:/setplayertracker = >>>
+	include('includes/playertracker/main.ms')
+	_setTracker(player())
+<<<
+
+
+###############################################################
+#                Group Specific Commands                      #
+###############################################################
+
+#Activates veteran trail. I know.. it's pretty effing obvious. But I want the comment here anyway.
+~veteran:/veterantrail = >>>
+	sudo('/trailsid green ' . player())
+	msg(color(7).'Use '.color(6).'/notrail'.color(7).' to disable your trail')
+<<<
+
+~visitor:/notrail = >>>
+	sudo('/trailsid none ' . player())
+<<<
+
+~manager:/modtrail = >>>
+	sudo('/trailsid colors ' . player())
+	msg(color(7).'Use '.color(6).'/notrail'.color(7).' to disable your trail')
+<<<
+
+~serverhelpers:/discotrail = >>>
+	sudo('/trailsid disco ' . player())
+	msg(color(7).'Use '.color(6).'/notrail'.color(7).' to disable your trail')
+<<<
+
+bbc:/bbctrail = >>>
+	sudo('/trailsid spell ' . player())
+	msg(color(7).'Use '.color(6).'/notrail'.color(7).' to disable your trail')
+<<<
+
+~citizen:/profile [$player] = >>>
+    if($player == '')
+    {
+      @player = player()
+    }
+    else
+    {
+      @player = $player
+    }
+    run('/topsurvivor view '.@player)
+<<<
+
+
+
+###############################################################
+#                Elite Specific Commands                      #
+###############################################################
+~elite:/timeskip $remote = >>>
+  try(
+    include('includes/eliteperks/main.ms')
+    _timeSkip($remote)
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(c).color(o).' Your lack of Elite Status has caused this item to crumble and fail')
+      }
+    )
+<<<
+
+~elite:/skyclear $remote = >>>
+  try(
+    include('includes/eliteperks/main.ms')
+    _skyClear($remote)
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(c).color(o).' Your lack of Elite Status has caused this item to crumble and fail')
+      }
+    )
+<<<
+
+~elite:/elitebonusclaimblocks $remote = >>>
+  try(
+    include('includes/eliteperks/main.ms')
+    _getClaimBlocks($remote)
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(c).color(o).' Your lack of Elite Status has caused this item to crumble and fail')
+      }
+    )
+<<<
+
+
+
+
+
+###############################################################
+#                    Prize List Commands                      #
+###############################################################
+
+# Add prize to prize list
+~director:/addprize [$] = >>>
+    include('includes/prizeclaim/main.ms')
+    @args = parse_args($);
+    if(array_size(@args) != 2)
+    {
+      @error = 'Add a prize to the prize list for a specific player \n'
+      @error .= 'To view available prizekeys type /prizekeys \n'
+      @error .= 'Syntax: /addprize playername prizekey'
+      die(@error)
+    }
+    
+    # Check if player exists
+    
+    # Check if Prize Key exists
+    
+    _addPrize(@args[0], @args[1])
+<<<
+
+/removeprize [$] = >>>
+    include('includes/prizeclaim/main.ms')
+    @args = parse_args($);
+    if(array_size(@args) != 2)
+    {
+      @error = 'Remove a prize from the prize list. \n'
+      @error .= 'Please specify the player\'s name and the prize key \n'
+      @error .= 'Syntax: /removeprize playername prizekey'
+      die(@error)
+    }
+    
+    # Check if player exists
+    
+    # Check if Prize Key exists
+    
+    _removePrize(@args[0], @args[1])
+<<<
+
+# Check if the player (running the command) has prizes
+~citizen:/checkprizes = >>>
+    include('includes/prizeclaim/main.ms')
+    _checkPrizeList(player())
+<<<
+
+~citizen:/claimprizes = >>>
+    include('includes/prizeclaim/main.ms')
+    try(
+      # Prevent Claiming the Arena World
+      if(pworld(player()) == "Arena", 
+        die(color(c)."You will not be able to take your prize back to the Overworld if you claim your prize in the Arena"))
+      _claimPrizes(player())
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(e).' You do not have permissions to do this')
+      }
+    )
+<<<
+
+/prizelist = >>>
+    include('includes/prizeclaim/main.ms')
+    _printPrizeList()
+<<<
+
+/clearprizelist = >>>
+    include('includes/prizeclaim/main.ms')
+    _clearPrizeList()
+<<<
+
+###############################################################
+#                   Cake Run Mode Switchers                   #
+###############################################################
+
+~visitor:/cakerunmode $mode = >>>
+  include('includes/cakerunmodes/main.ms')
+  switch($mode)
+  {
+    case 'cakerun':
+      _modeCakeRun()
+      msg(color(l).'Parkour Mode: Cake Run\n')
+      break
+    case 'cakerunHM':
+      _modeCakeRun()
+      _modeCakeRunHM()
+      msg(color(l).'Parkour Mode: Cake Run HM\n')
+      break
+    case 'cakeSprint':
+      _modeCakeRun()
+      _modeCakeSprint();
+      msg(color(l).'Parkour Mode: Cake Sprint\n')
+      break
+    default:
+      _modeCakeRun()
+      msg(color(c).color(o).'Unknown mode, check input')
+      msg(color(l).'Parkour Mode: Cake Run\n')
+  }
+<<<
+
+###############################################################
+#                      Airship Commands                       #
+###############################################################
+airshiptravel:/airshiptravel [$] = >>>
+	if(has_permission(player(), 'commandhelper.alias.airshiptravel') == false, die(color(7).'[DH Console]'.color(e).' What do you think you are doing? :I'))
+	@err = "Command used for airship travel. \n"
+    @err .= "/airshiptravel <player> <destination>]"
+	if($ == "", die(@err))
+	@args = parse_args($)
+	include('includes/airshiptravel/main.ms')
+	_airshipTravel(@args[0], @args[1])
+<<<
+
+
+###############################################################
+#                  Grim/Death Respawn System                  #
+###############################################################
+/checklastdeathpoint $player = >>>
+  include('includes/deathrespawn/main.ms')
+  @locArray = _getLastDeathPoint($player)
+  if(@locArray == null)
+  {
+    msg($player.' does not have a death point on record.')
+    msg('They need to die first.')
+  }
+  else
+  {
+    msg('Last death point at: X:'.@locArray[x].' Z:'.@locArray[z].' Y:'.@locArray[y])
+  }
+<<<
+
+/tpToGrim $player = >>>
+  include('includes/deathrespawn/main.ms')
+  _tpToGrim($player)
+<<<
+
+/respawnselector $player = >>>
+  include('includes/deathrespawn/main.ms')
+  _respawnSelector($player)
+<<<
+
+/returntospawn $player = >>>
+  include('includes/deathrespawn/main.ms')
+  _returnToSpawn($player)
+<<<
+
+/returntodeathpoint $player = >>>
+  include('includes/deathrespawn/main.ms')
+  _returnToDeathPoint($player)
+<<<
+
+/returntohome $player = >>>
+  include('includes/deathrespawn/main.ms')
+  _returnToHome($player)
+<<<
+
+###############################################################
+#                     Newbie Spawn System                     #
+###############################################################
+
+/newbiestart $player = >>>
+  include('includes/clans/main.ms')
+  _randomJoinClan($player)
+  @clan = _findPlayerClan($player)
+  switch(@clan)
+  {
+    case 'DragonKin':
+      @clanname = 'DragonKin\'s'
+      capture_runas('~console', '/warp sanctuary-dragonkin-bridge '.$player)
+      break()
+    case 'DragonHunters':
+      @clanname = 'DragonHunters\''
+      capture_runas('~console', '/warp sanctuary-dragonhunters-bridge '.$player)
+      break()
+    case 'DragonRiders':
+      @clanname = 'DragonRiders\''
+      capture_runas('~console', '/warp sanctuary-dragonriders-bridge '.$player)
+      break()
+    default:
+      break()
+  }
+  tmsg($player, '')
+  tmsg($player, 'You have been teleported to '.@clanname.' bridge.')
+  tmsg($player, 'Across the bridge you\'ll find a cobblestone gateway.')
+  tmsg($player, 'Go through it to go to Pandora, where you can')
+  tmsg($player, 'start your survival.')
+  tmsg($player, '')
+  tmsg($player, 'You can always explore Sanctuary (this main island) \nand Blackbourne (tutorial island) later!')
+<<<
+
+/warptoclanbridge $player = >>>
+  include('includes/clans/main.ms')
+  @clan = _findPlayerClan($player)
+  switch(@clan)
+  {
+    case 'DragonKin':
+      @location = 'DragonKin\'s bridge.'
+      capture_runas('~console', '/warp sanctuary-dragonkin-bridge '.$player)
+      break()
+    case 'DragonHunters':
+      @location = 'DragonHunters\' bridge.'
+      capture_runas('~console', '/warp sanctuary-dragonhunters-bridge '.$player)
+      break()
+    case 'DragonRiders\' bridge.':
+      @location = 'DragonRiders\''
+      capture_runas('~console', '/warp sanctuary-dragonriders-bridge '.$player)
+      break()
+    default:
+      @location = 'Sanctuary'
+      capture_runas('~console', '/mvtp '.$player.' Sanctuary')
+      break()
+  }
+  if(@location == 'Sanctuary')
+  {
+    tmsg($player, '')
+    tmsg($player, 'You have been teleported to '.@location'.')
+    tmsg($player, 'Have a look around the different street signs')
+    tmsg($player, 'to find what you are looking for.')
+    tmsg($player, '')
+    tmsg($player, 'Also in the future, try crossing the bridges')
+    tmsg($player, 'If you still have a Join Clan Token, use it already!')
+    tmsg($player, '')
+  }
+  else
+  {
+    tmsg($player, '')
+    tmsg($player, 'You have been teleported to '.@location'.')
+    tmsg($player, 'Across the bridge you\'ll find a cobblestone gateway.')
+    tmsg($player, 'Go through it to go to Pandora, where you can')
+    tmsg($player, 'start your survival.')
+    tmsg($player, '')
+    tmsg($player, 'Also in the future, try crossing the bridges and looking')
+    tmsg($player, 'at street signs :)')
+    tmsg($player, '')
+  }
+<<<
+
+###############################################################
+#                      Manager Commands                       #
+###############################################################
+
+
+###############################################################
+#                      Builder Commands                       #
+###############################################################
+
+~builder/historian:/build [$] = >>>
+	if(has_permission(player(), 'commandhelper.alias.builder') == false, die(color(c).'What do you think you\'re doing? :I'))
+	include('includes/builders/main.ms')
+	@err = "Command used by builders. \n"
+    @err .= "/build <start/stop>"
+    if($ == "", die(@err))
+    @args = parse_args($)
+	if(length(@args) > 1, die(@err))
+	@args[0] = to_lower(@args[0])
+	ifelse(@args[0] == 'stop', _stopBuild(player()), _startBuild(player(), @args[0]))
+<<<
+
+###############################################################
+#               Miscellaneous/Admin Commands                  #
+###############################################################
+
+/createscoreboard = >>>
+  create_scoreboard('Residents')
+  create_team('AllResidents', 'Residents')
+  set_team_options('AllResidents', array(nametagvisibility:'never'), 'Residents')
+<<<
+
+/removeresident $player = >>>
+  team_remove_player('AllResidents', $player, 'Residents')
+  msg($player. ' was given their nametag back')
+<<<
+
+/getploc = msg(ploc())
+
+/destroyOnDrop $player = _destroyOnDrop($player)
+
+/ssr = >>>
+    include('includes/serverstatreset/main.ms')
+    _ssr()
+<<<
+
+/ss = >>>
+    include('includes/survivorscoreboard/main.ms')
+    _updateSurvivorScoreboard()
+<<<
+
+/ssdisqualify $player = >>>
+    include('includes/survivorscoreboard/main.ms')
+    _disqualify($player)
+<<<
+
+/customhead $name = >>>
+  run('/give '.player().' skull 1 3 {SkullOwner:'.$name.'}')
+<<<
+
+/endercrystal = >>>
+  @location = ploc(player())
+  #run('/setblock '.@location[x].' '.@location[y].' '.@location[z].' bedrock')
+  run('/summon EnderCrystal '.@location[x].' '.@location[y].' '.@location[z])
+<<<
+
+/reload = >>>
+  msg(color(c)."You have tried to reload the server... again.")
+  msg(color(c)."Reloading aliases instead.")
+  run('/reloadalias')
+<<<
+
+~director:/scan [$player] [$intervalInSeconds=5] = >>>
+    include('includes/playerscanning/main.ms')
+    _scan($intervalInSeconds, $player)
+<<<
+
+~director:/restart = >>>
+  proc(_bc, @label, @str,
+      msg(concat(color(7), '[', @label, '] ', color(yellow), @str))
+  )
+  
+  #editable vars:
+  assign(@limit, 100)
+  assign(@saying, 'Dragonhollow is Restarting...')
+  assign(@name, 'DH Herald')
+   
+  #dynamic vars, dont edit
+  assign(@times, 10)
+  assign(@ms, 1000)
+  
+  #Announce restart in 10 seconds...
+  _bc(@name, 'Dragonhollow is restarting in ten seconds...')
+  
+  #make it quicker!
+  if(@times > @limit, die(color(red).'['.color(gold).@name.color(red).'] '.color(red).'Make the countdown quicker!'))
+  #the countdown
+  for(@times, gte(@times, 1), dec(@times) inc(@ms, 1000),
+      set_timeout(@ms, closure(_bc(@name, @times)))
+      if(@times == '1',
+          inc(@ms, 1000)
+          set_timeout(@ms,closure(_bc(@name, @saying)))
+          set_timeout(@ms,closure(console(@saying)))
+          run('/restart')
+      )
+  )
+<<<
+
+~director:/squid [$]= >>>
+    include('includes/squid/main.ms')
+    @args = parse_args($)
+    try(
+      _squid($)
+    , @ex,
+      if(@ex[classType] == InsufficientPermissionException)
+      {
+        die(color(7).'[DH Console]'.color(e).' What do you think you are doing :I')
+      }
+      else
+      {
+        die(@ex)
+      }
+    )
+<<<
+
+~director:/slap [$]=>>>
+	@err = '/slap [player] <damage>'
+	if($ == '', die(@err))
+	@args = parse_args($)
+	if(length(@args) > 2, die(@err))
+	@player = @args[0]
+	if(length(@args == 2), @damage = @args[1])
+	else{@damage = 0}
+	@velocity = entity_velocity(puuid(@player))
+	@px = rand(3,21)
+	if(rand(2) == 0, @px = @px * -1)
+	@py = rand(5,21)
+	@pz = rand(3,21)
+	if(rand(2) == 0, @pz = @pz * -1)
+	@velocity[0] += @px
+	@velocity[x] += @px
+	@velocity[1] += @py
+	@velocity[y] += @py
+	@velocity[2] += @pz
+	@velocity[z] += @pz
+	damage_entity(puuid(@player), @damage)
+	set_pvelocity(@player, @velocity)
+<<<
+
+~owner:/retrobug = >>>
+	#tmsg(player(), get_entity_max_speed(get_entity_vehicle(puuid(player()))))
+	#set_entity_max_speed(get_entity_vehicle(puuid(player())), 1000)
+	#include('includes/playertracker/main.ms')
+	#tmsg(player(), get_compass_target(player()))
+	#_setTracker(player())
+	#tmsg(player(), _isOnRail(get_entity_vehicle(puuid(player()))))
+	#console(get_compass_target('Moxicology'))
+	entity_remove(get_entity_vehicle(puuid(player())))
+<<<
+
+###############################################################
+#           Error Messages for Default Commands               #
+###############################################################
+
+~visitor:/spawn = >>>
+  die(color(7).'[DH Console] '.color(c).'There is no /spawn')
+<<<
+~visitor:/sethome = >>>
+  die(color(7).'[DH Console] '.color(c).'You need to right-click with a hearthstone to set your home')
+<<<
+~visitor:/home = >>>
+  die(color(7).'[DH Console] '.color(c).'You need to left-click with a hearthstone to teleport home')
+<<<
+~visitor:/soup = >>>
+  die(color(7).'[DH Console] '.color(c).'What do you think you\'re doing?')
+<<<
+~visitor:/gapple = >>>
+  die(color(7).'[DH Console] '.color(c).'What do you think you\'re doing?')
+<<<
+
+~visitor:/tpa $ = >>>
+  die(color(7).'[DH Console] '.color(c).'HA! Nope xD gotta walk everywhere ;)')
+<<<
+/*
+~visitor:/me $ = >>>
+  die(color(c).'Oh, is that so?')
+<<<
+*/

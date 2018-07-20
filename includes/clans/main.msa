@@ -1,0 +1,66 @@
+/**
+  * Creates all the clans
+  * Usage: /createclans
+  */
+/createclans = >>>
+  include('main.ms')
+  try(
+    _createClans()
+  , @ex,
+    msg(@ex)
+  )
+<<<
+
+/**
+  * Lists All Clans & Details
+  * Usage: /allclans
+  */
+/allclans = >>>
+  include('main.ms')
+  @allClans = _getAllClans()
+  foreach(@clan in @allClans)
+  {
+    @string = 'Name: '.@clan.'\n'
+    @string .= 'Population: '._getClanSize(@clan).'\n'
+    @string .= 'Members: '
+    @members = _getClanMembers(@clan)
+    foreach(@member in @members)
+    {
+      @string .= @member.'\t'
+    }
+    msg(@string)
+  }
+<<<
+
+/**
+  * Deletes all clans 
+  * and sets all players to be clanless
+  * Usage: /deleteallclans
+  */
+/deleteallclans = >>>
+  include('main.ms')
+  try(
+    _deleteClans()
+  , @ex,
+    msg(@ex)
+  )
+<<<
+
+/**
+  * Join a specified clan
+  * Usage: /joinclan <clan> <player>
+  */
+/joinclan [$] = >>>
+  @help = "Join a specific clan"
+  @help .= "Usage: /joinclan <clan> <player>"
+  if($ == '')
+  {
+    msg(@help)
+  }
+  @arg = parse_args($)
+  if(array_size(@arg) != 2)
+  {
+    msg(@help)
+  }
+  
+<<<
